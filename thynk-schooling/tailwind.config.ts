@@ -1,100 +1,45 @@
 import type { Config } from 'tailwindcss'
-
 const config: Config = {
-  content: [
-    './app/**/*.{js,ts,jsx,tsx,mdx}',
-    './components/**/*.{js,ts,jsx,tsx,mdx}',
-    './pages/**/*.{js,ts,jsx,tsx,mdx}',
-  ],
+  content: ['./app/**/*.{js,ts,jsx,tsx,mdx}','./components/**/*.{js,ts,jsx,tsx,mdx}'],
   theme: {
     extend: {
       colors: {
-        navy: {
-          950: '#04071A',
-          900: '#0A0F2E',
-          800: '#0F1640',
-          700: '#151D52',
-          600: '#1E2A6E',
-          500: '#2A3A8F',
-          400: '#3D52B0',
-          300: '#6B7FCC',
-          200: '#A3AEDD',
-          100: '#D6DBEF',
-          50:  '#EEF0F8',
-        },
-        orange: {
-          950: '#3D1400',
-          900: '#7A2800',
-          800: '#B33A00',
-          700: '#CC4200',
-          600: '#E34A00',
-          500: '#FF5C00',
-          400: '#FF7A2E',
-          300: '#FF9A61',
-          200: '#FFBF99',
-          100: '#FFE0CC',
-          50:  '#FFF4EE',
-        },
-        surface: {
-          dark:   '#0A0F2E',
-          card:   '#111830',
-          hover:  '#161F3D',
-          border: '#1E2A52',
-        },
+        ivory:  { DEFAULT:'#FAF7F2', 2:'#F5F0E8', 3:'#EDE5D8', 4:'#E4D9C8' },
+        cream:  '#FDF9F4',
+        ink:    { DEFAULT:'#0D1117', 2:'#1C2333', 3:'#2D3748', light:'#4A5568', muted:'#718096', faint:'#A0ADB8' },
+        gold:   { DEFAULT:'#B8860B', 2:'#C9960D', 3:'#D4A520', light:'#E8C547', pale:'#F5E090', wash:'#FEF7E0', tint:'#FDFAF0' },
       },
       fontFamily: {
-        display: ['Syne', 'sans-serif'],
-        body:    ['DM Sans', 'sans-serif'],
+        serif:   ['Cormorant Garamond','EB Garamond','Georgia','serif'],
+        sans:    ['Inter','system-ui','sans-serif'],
+        display: ['Cormorant Garamond','Georgia','serif'],
       },
-      backgroundImage: {
-        'hero-mesh':     'radial-gradient(ellipse 80% 60% at 50% -10%, #1E2A6E 0%, transparent 60%), radial-gradient(ellipse 60% 50% at 80% 60%, rgba(255,92,0,0.08) 0%, transparent 60%)',
-        'card-shine':    'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 60%)',
-        'grid-pattern':  'linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)',
-        'orange-radial': 'radial-gradient(ellipse 60% 80% at 50% 50%, rgba(255,92,0,0.15) 0%, transparent 70%)',
-      },
-      backgroundSize: {
-        'grid': '40px 40px',
+      fontSize: {
+        '7xl': ['4.5rem',{lineHeight:'1.04',letterSpacing:'-0.025em'}],
+        '8xl': ['6rem',  {lineHeight:'1.0', letterSpacing:'-0.03em'}],
+        '9xl': ['8rem',  {lineHeight:'0.96',letterSpacing:'-0.035em'}],
       },
       boxShadow: {
-        'card':       '0 4px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05)',
-        'card-hover': '0 8px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,92,0,0.25)',
-        'orange':     '0 0 30px rgba(255,92,0,0.4)',
-        'orange-sm':  '0 0 12px rgba(255,92,0,0.3)',
-        'glow-lg':    '0 0 80px rgba(255,92,0,0.12)',
+        'sm-soft': '0 1px 4px rgba(13,17,23,0.06), 0 4px 16px rgba(13,17,23,0.04)',
+        'md-soft': '0 4px 20px rgba(13,17,23,0.08), 0 1px 4px rgba(13,17,23,0.05)',
+        'lg-soft': '0 12px 48px rgba(13,17,23,0.12), 0 4px 16px rgba(13,17,23,0.06)',
+        'gold':    '0 4px 20px rgba(184,134,11,0.2), 0 1px 4px rgba(184,134,11,0.15)',
+        'gold-lg': '0 6px 28px rgba(184,134,11,0.3)',
       },
       animation: {
-        'fade-up':      'fadeUp 0.6s ease forwards',
-        'fade-in':      'fadeIn 0.4s ease forwards',
-        'float':        'float 6s ease-in-out infinite',
-        'pulse-dot':    'pulseDot 2s ease-in-out infinite',
-        'shimmer':      'shimmer 1.5s infinite',
-        'spin-slow':    'spin 8s linear infinite',
+        'fade-up':   'fadeUp .6s ease forwards',
+        'float':     'float 5s ease-in-out infinite',
+        'pulse-dot': 'pulseDot 2s ease-in-out infinite',
+        'shimmer':   'shimmer 1.5s infinite',
       },
       keyframes: {
-        fadeUp: {
-          '0%':   { opacity: '0', transform: 'translateY(24px)' },
-          '100%': { opacity: '1', transform: 'translateY(0)' },
-        },
-        fadeIn: {
-          '0%':   { opacity: '0' },
-          '100%': { opacity: '1' },
-        },
-        float: {
-          '0%, 100%': { transform: 'translateY(0px)' },
-          '50%':      { transform: 'translateY(-12px)' },
-        },
-        pulseDot: {
-          '0%, 100%': { opacity: '1', transform: 'scale(1)' },
-          '50%':      { opacity: '0.5', transform: 'scale(0.8)' },
-        },
-        shimmer: {
-          '0%':   { backgroundPosition: '-200% 0' },
-          '100%': { backgroundPosition: '200% 0' },
-        },
+        fadeUp:    { '0%':{opacity:'0',transform:'translateY(20px)'},'100%':{opacity:'1',transform:'translateY(0)'} },
+        float:     { '0%,100%':{transform:'translateY(0)'},'50%':{transform:'translateY(-8px)'} },
+        pulseDot:  { '0%,100%':{opacity:'1',transform:'scale(1)'},'50%':{opacity:'.3',transform:'scale(.65)'} },
+        shimmer:   { '0%':{backgroundPosition:'200% 0'},'100%':{backgroundPosition:'-200% 0'} },
       },
     },
   },
   plugins: [],
 }
-
 export default config

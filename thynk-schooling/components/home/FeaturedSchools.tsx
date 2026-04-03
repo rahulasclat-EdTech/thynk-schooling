@@ -1,109 +1,65 @@
 'use client'
+import { useRef } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { motion } from 'framer-motion'
-import { useInView } from 'react-intersection-observer'
+import { motion, useInView } from 'framer-motion'
 import Link from 'next/link'
-import { Star, MapPin, ArrowRight, BadgeCheck, GraduationCap } from 'lucide-react'
-import { apiGet } from '@/lib/api'
+import { Star, MapPin, BadgeCheck, GraduationCap, ArrowRight } from 'lucide-react'
 import { School } from '@/types'
 
-function SchoolCardSkeleton() {
+function Skeleton() {
   return (
-    <div className="card overflow-hidden">
-      <div className="skeleton h-44 w-full rounded-t-2xl rounded-b-none" />
-      <div className="p-5 space-y-3">
-        <div className="skeleton h-5 w-3/4 rounded-lg" />
-        <div className="skeleton h-4 w-1/2 rounded-lg" />
-        <div className="flex gap-2">
-          <div className="skeleton h-6 w-16 rounded-full" />
-          <div className="skeleton h-6 w-16 rounded-full" />
+    <div style={{ background:'#fff', border:'1px solid rgba(13,17,23,0.08)', borderRadius:'14px', overflow:'hidden' }}>
+      <div className="skeleton" style={{ height:'152px', borderRadius:0 }} />
+      <div style={{ padding:'18px' }}>
+        <div className="skeleton" style={{ height:'18px', width:'70%', marginBottom:'8px' }} />
+        <div className="skeleton" style={{ height:'13px', width:'40%', marginBottom:'12px' }} />
+        <div style={{ display:'flex', gap:'6px', marginBottom:'14px' }}>
+          <div className="skeleton" style={{ height:'18px', width:'50px', borderRadius:'100px' }} />
+          <div className="skeleton" style={{ height:'18px', width:'50px', borderRadius:'100px' }} />
         </div>
-        <div className="skeleton h-4 w-2/3 rounded-lg" />
+        <div className="skeleton" style={{ height:'13px', width:'60%' }} />
       </div>
     </div>
   )
 }
 
-function SchoolCard({ school, index }: { school: School; index: number }) {
+function SchoolCard({ school, i }: { school: School; i: number }) {
+  const COVER_BG = ['linear-gradient(135deg,#F0EAD6,#E8DCC8)','linear-gradient(135deg,#EAF0EA,#D8E8D8)','linear-gradient(135deg,#EAE8F0,#D8D4E8)','linear-gradient(135deg,#F0EAE8,#E8D8D4)']
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.1, duration: 0.5 }}
-    >
-      <Link href={`/schools/${school.slug}`} className="card-hover overflow-hidden flex flex-col h-full block">
+    <motion.div initial={{ opacity:0, y:24 }} animate={{ opacity:1, y:0 }} transition={{ delay:i*.09, duration:.55 }}>
+      <Link href={`/schools/${school.slug}`} className="card-hover" style={{ display:'flex', flexDirection:'column', height:'100%', overflow:'hidden', borderRadius:'14px' }}>
         {/* Cover */}
-        <div className="relative h-44 bg-navy-800 overflow-hidden">
-          {school.coverImageUrl ? (
-            <img
-              src={school.coverImageUrl}
-              alt={school.name}
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-              loading="lazy"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-navy-700 to-navy-800">
-              <GraduationCap className="w-12 h-12 text-navy-500" />
-            </div>
-          )}
-          {/* Badges */}
-          <div className="absolute top-3 left-3 flex gap-2">
-            {school.isFeatured && (
-              <span className="badge-orange text-[10px] px-2 py-0.5">⭐ Featured</span>
-            )}
-            {school.isVerified && (
-              <span className="badge-green text-[10px] px-2 py-0.5 flex items-center gap-1">
-                <BadgeCheck className="w-3 h-3" /> Verified
-              </span>
-            )}
+        <div style={{ height:'152px', background: school.coverImageUrl ? undefined : COVER_BG[i % 4], position:'relative', overflow:'hidden', display:'flex', alignItems:'center', justifyContent:'center' }}>
+          {school.coverImageUrl
+            ? <img src={school.coverImageUrl} alt={school.name} style={{ width:'100%', height:'100%', objectFit:'cover', transition:'transform .4s ease' }} loading="lazy" />
+            : <GraduationCap style={{ width:'48px', height:'48px', color:'rgba(13,17,23,0.15)' }} />
+          }
+          <div style={{ position:'absolute', inset:0, background:'linear-gradient(to top, rgba(13,17,23,0.12) 0%, transparent 50%)', pointerEvents:'none' }} />
+          <div style={{ position:'absolute', top:'10px', left:'10px', display:'flex', gap:'5px' }}>
+            {school.isVerified  && <span className="badge-green"  style={{ fontSize:'10px' }}><BadgeCheck style={{ width:'10px', height:'10px' }} /> Verified</span>}
+            {school.isFeatured  && <span className="badge-gold"   style={{ fontSize:'10px' }}>★ Featured</span>}
           </div>
-          {/* Logo */}
-          {school.logoUrl && (
-            <div className="absolute -bottom-5 left-4 w-12 h-12 rounded-xl border-2 border-surface-card overflow-hidden bg-white shadow-card">
-              <img src={school.logoUrl} alt={`${school.name} logo`} className="w-full h-full object-contain p-1" loading="lazy" />
-            </div>
-          )}
         </div>
-
-        {/* Info */}
-        <div className="p-5 pt-7 flex flex-col gap-3 flex-1">
-          <div>
-            <h3 className="font-display font-bold text-white text-base leading-tight line-clamp-2 group-hover:text-orange-400 transition-colors">
-              {school.name}
-            </h3>
-            <div className="flex items-center gap-1.5 mt-1.5 text-navy-300 text-xs">
-              <MapPin className="w-3 h-3 flex-shrink-0" />
-              <span>{school.city}</span>
-            </div>
+        {/* Body */}
+        <div style={{ padding:'18px', display:'flex', flexDirection:'column', flex:1 }}>
+          <h3 style={{ fontFamily:'Cormorant Garamond,serif', fontWeight:700, fontSize:'15px', color:'#0D1117', lineHeight:1.25, marginBottom:'5px' }}>{school.name}</h3>
+          <div style={{ display:'flex', alignItems:'center', gap:'4px', fontFamily:'Inter,sans-serif', fontSize:'11px', color:'#A0ADB8', marginBottom:'11px' }}>
+            <MapPin style={{ width:'10px', height:'10px' }} /> {school.city}
           </div>
-
-          {/* Tags */}
-          <div className="flex flex-wrap gap-1.5">
-            {school.board.slice(0, 2).map((b) => (
-              <span key={b} className="badge-orange text-[10px]">{b}</span>
-            ))}
-            {school.genderPolicy && (
-              <span className="badge-gray text-[10px]">{school.genderPolicy}</span>
-            )}
-            {school.schoolType && (
-              <span className="badge-blue text-[10px]">{school.schoolType}</span>
-            )}
+          <div style={{ display:'flex', gap:'5px', flexWrap:'wrap', marginBottom:'13px' }}>
+            {school.board.slice(0,2).map(b => <span key={b} className="badge-gold" style={{ fontSize:'10px' }}>{b}</span>)}
+            {school.genderPolicy && <span className="badge-light" style={{ fontSize:'10px' }}>{school.genderPolicy}</span>}
           </div>
-
-          {/* Rating + Fee */}
-          <div className="flex items-center justify-between mt-auto pt-2 border-t border-surface-border">
-            <div className="flex items-center gap-1">
-              <Star className="w-3.5 h-3.5 text-orange-400 fill-orange-400" />
-              <span className="font-display font-bold text-white text-sm">{school.avgRating.toFixed(1)}</span>
-              <span className="text-navy-400 text-xs">({school.totalReviews})</span>
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginTop:'auto', paddingTop:'12px', borderTop:'1px solid rgba(13,17,23,0.06)' }}>
+            <div style={{ display:'flex', alignItems:'center', gap:'4px' }}>
+              <Star style={{ width:'12px', height:'12px', fill:'#B8860B', color:'#B8860B' }} />
+              <span style={{ fontFamily:'Cormorant Garamond,serif', fontWeight:700, fontSize:'14px', color:'#0D1117' }}>{school.avgRating.toFixed(1)}</span>
+              <span style={{ fontFamily:'Inter,sans-serif', fontSize:'11px', color:'#A0ADB8' }}>({school.totalReviews})</span>
             </div>
             {school.monthlyFeeMin && (
-              <div className="text-right">
-                <div className="font-display font-bold text-white text-sm">
-                  ₹{school.monthlyFeeMin.toLocaleString('en-IN')}
-                  <span className="text-navy-400 font-normal text-xs">/mo</span>
-                </div>
-              </div>
+              <span style={{ fontFamily:'Cormorant Garamond,serif', fontWeight:700, fontSize:'14px', color:'#B8860B' }}>
+                ₹{school.monthlyFeeMin.toLocaleString('en-IN')}<span style={{ fontFamily:'Inter,sans-serif', fontSize:'10px', color:'#A0ADB8', fontWeight:300 }}>/mo</span>
+              </span>
             )}
           </div>
         </div>
@@ -113,40 +69,31 @@ function SchoolCard({ school, index }: { school: School; index: number }) {
 }
 
 export function FeaturedSchools() {
-  const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.1 })
-
+  const ref = useRef(null)
+  const inView = useInView(ref, { once:true, amount:.1 })
   const { data, isLoading } = useQuery<{ data: School[] }>({
     queryKey: ['featured-schools'],
-    queryFn:  () => apiGet('/schools?isFeatured=true&limit=8&sortBy=rating'),
-    enabled:  inView,
-    staleTime: 5 * 60 * 1000,
+    queryFn: () => fetch('/api/schools?isFeatured=true&limit=8',{cache:'no-store'}).then(r=>r.json()).then(d=>d.data??[]),
+    enabled: inView, staleTime: 5*60*1000,
   })
-
   const schools = data?.data ?? []
 
   return (
-    <section ref={ref} className="section bg-navy-950">
-      <div className="container-xl mx-auto">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-12">
+    <section ref={ref} style={{ background:'#FAF7F2', padding:'96px 0' }}>
+      <div style={{ maxWidth:'1600px', margin:'0 auto', padding:'0 clamp(20px,5vw,80px)' }}>
+        <div style={{ display:'flex', alignItems:'flex-end', justifyContent:'space-between', gap:'24px', marginBottom:'48px' }}>
           <div>
-            <span className="badge-orange mb-3 inline-flex">Featured Schools</span>
-            <h2 className="section-title">
-              Top Schools Across <span className="text-gradient">India</span>
-            </h2>
+            <div className="eyebrow">Featured Schools</div>
+            <h2 className="section-title" style={{ fontSize:'48px' }}>Top Schools Across <em>India</em></h2>
           </div>
-          <Link href="/schools" className="btn-outline flex-shrink-0 self-start sm:self-auto">
-            View All Schools <ArrowRight className="w-4 h-4" />
+          <Link href="/schools" className="btn-outline" style={{ flexShrink:0, alignSelf:'flex-start' }}>
+            View All Schools <ArrowRight style={{ width:'14px', height:'14px' }} />
           </Link>
         </div>
-
-        {/* Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:'16px' }}>
           {isLoading
-            ? Array.from({ length: 8 }).map((_, i) => <SchoolCardSkeleton key={i} />)
-            : schools.map((school, i) => (
-                <SchoolCard key={school.id} school={school} index={i} />
-              ))
+            ? Array.from({ length:8 }).map((_,i) => <Skeleton key={i} />)
+            : schools.map((s, i) => <SchoolCard key={s.id} school={s} i={i} />)
           }
         </div>
       </div>

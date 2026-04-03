@@ -1,57 +1,38 @@
 'use client'
-/**
- * useDropdown — fetches dropdown options from the Settings API.
- * ALL dropdowns in the app use this hook. Nothing is hardcoded.
- * Results are cached for 5 minutes (React Query staleTime).
- *
- * Usage:
- *   const { options, isLoading } = useDropdown('board')
- *   const { options } = useDropdown('city', { parentValue: 'maharashtra' }) // cascading
- */
-
 import { useQuery } from '@tanstack/react-query'
-import { apiGet } from '@/lib/api'
-import { DropdownOption } from '@/types'
 
-interface UseDropdownOptions {
-  parentValue?: string
-  enabled?: boolean
-}
+interface SelectOption { label: string; value: string }
 
-interface SelectOption {
-  label: string
-  value: string
-}
+async function fetchDropdown(category: string, parentValue?: string): Promise<SelectOption[]> {
+  const params = new URLSearchParams({ category })
+  if (parentValue) params.set('parentValue', parentValue)
 
-export function useDropdown(category: string, opts: UseDropdownOptions = {}) {
-  const { parentValue, enabled = true } = opts
+  const res = await fetch(`/api/settings/dropdown?${params}`, { cache: 'no-store' })
+  if (!res.ok) return []
+  const data = await res.json()
 
-  const { data, isLoading, isError } = useQuery<DropdownOption[]>({
-    queryKey: ['dropdown', category, parentValue],
-    queryFn: () =>
-      apiGet<DropdownOption[]>('/settings/dropdown', {
-        category,
-        ...(parentValue ? { parentValue } : {}),
-      }),
-    staleTime: 5 * 60 * 1000,   // 5 minutes
-    gcTime:    10 * 60 * 1000,  // 10 minutes
-    enabled,
-    placeholderData: [],
-  })
-
-  const options: SelectOption[] = (data ?? []).map((d) => ({
-    label: d.label,
-    value: d.value,
+  // API returns { options: [...] }
+  const raw: any[] = Array.isArray(data) ? data : (data.options ?? data.data ?? [])
+  return raw.map((d: any) => ({
+    label: d.label ?? d.name ?? String(d.value),
+    value: String(d.value ?? d.id ?? d.label),
   }))
-
-  return { options, isLoading, isError, raw: data ?? [] }
 }
 
-// ── Multi-category fetch (used in search filters) ─────────────
-export function useDropdowns(categories: string[]) {
-  const results = categories.map((cat) => {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    return { category: cat, ...useDropdown(cat) }
+export function useDropdown(category: string, opts: { parentValue?: string; enabled?: boolean } = {}) {
+  const { parentValue, enabled = true } = opts
+  const { data = [], isLoading, isError } = useQuery<SelectOption[]>({
+    queryKey: ['dropdown', category, parentValue],
+    queryFn: () => fetchDropdown(category, parentValue),
+    staleTime: 2 * 60 * 1000,   // 2 min — fresh enough, avoids hammering DB
+    gcTime:    5 * 60 * 1000,
+    enabled,
+    retry: 2,
   })
-  return results
+  return { options: data, isLoading, isError }
+}
+
+export function useDropdowns(categories: string[]) {
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  return categories.map(cat => ({ category: cat, ...useDropdown(cat) }))
 }
