@@ -1,15 +1,25 @@
+export const dynamic = 'force-dynamic'
+import { Suspense } from 'react'
 import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
-import { HeroSection }        from '@/components/home/HeroSection'
-import { StatsBar }           from '@/components/home/StatsBar'
-import { FeaturedSchools }    from '@/components/home/FeaturedSchools'
-import { HowItWorks }         from '@/components/home/HowItWorks'
-import { WhyChooseUs }        from '@/components/home/WhyChooseUs'
-import { CounsellingCTA }     from '@/components/home/CounsellingCTA'
-import { TopCitiesGrid }      from '@/components/home/TopCitiesGrid'
-import { TestimonialsSection } from '@/components/home/TestimonialsSection'
-import { ForSchoolsCTA }      from '@/components/home/ForSchoolsCTA'
-import { BlogPreview }        from '@/components/home/BlogPreview'
+import { HeroSection }     from '@/components/home/HeroSection'
+import { StatsBar }        from '@/components/home/StatsBar'
+import { HowItWorks }      from '@/components/home/HowItWorks'
+import { FeaturedSchools } from '@/components/home/FeaturedSchools'
+import { WhyChooseUs }     from '@/components/home/WhyChooseUs'
+import {
+  TopCitiesGrid,
+  BoardComparison,
+  CounsellingCTA,
+  TestimonialsSection,
+  ForSchoolsCTA,
+  BlogPreview,
+} from '@/components/home/HomeExtraSections'
+
+export const metadata = {
+  title: 'Thynk Schooling — Find the Best Schools in India',
+  description: 'Search, compare and apply to 12,000+ verified schools across India. Free AI-powered recommendations and 1-on-1 counselling.',
+}
 
 export default function HomePage() {
   return (
@@ -18,12 +28,15 @@ export default function HomePage() {
       <main>
         <HeroSection />
         <StatsBar />
-        <FeaturedSchools />
         <HowItWorks />
+        <Suspense fallback={<div style={{ height: '400px' }} />}>
+          <FeaturedSchools />
+        </Suspense>
         <WhyChooseUs />
         <TopCitiesGrid />
-        <CounsellingCTA />
+        <BoardComparison />
         <TestimonialsSection />
+        <CounsellingCTA />
         <ForSchoolsCTA />
         <BlogPreview />
       </main>
