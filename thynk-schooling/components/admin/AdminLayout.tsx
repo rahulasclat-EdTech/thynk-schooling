@@ -6,10 +6,11 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import {
   LayoutDashboard, School, Users, FileCheck, Star,
-  TrendingUp, DollarSign, Package, Settings, Palette,
+  TrendingUp, DollarSign, Settings, Palette, LayoutGrid,
   LogOut, GraduationCap, Menu, X, Bell, PhoneCall,
   BarChart3, FileText, ChevronRight, ExternalLink, Mail,
-  AlertTriangle, Image as ImageIcon, MapPin
+  AlertTriangle, Image as ImageIcon, MapPin, Zap, BookOpen,
+  LayoutList
 } from 'lucide-react'
 import { useAuthStore } from '@/store/authStore'
 
@@ -19,27 +20,31 @@ const NAV_GROUPS = [
     { icon:BarChart3,       label:'Analytics',   href:'/admin/analytics' },
   ]},
   { label:'Management', items:[
-    { icon:School,     label:'Schools',      href:'/admin/schools' },
-    { icon:Users,      label:'Users',        href:'/admin/users' },
-    { icon:FileCheck,  label:'Applications', href:'/admin/applications' },
-    { icon:TrendingUp, label:'Leads',        href:'/admin/leads' },
-    { icon:Star,       label:'Reviews',      href:'/admin/reviews' },
-    { icon:PhoneCall,  label:'Counselling',  href:'/admin/counselling' },
+    { icon:School,     label:'Schools',          href:'/admin/schools' },
+    { icon:Star,       label:'Featured Schools',  href:'/admin/featured-schools' },
+    { icon:Users,      label:'Users',            href:'/admin/users' },
+    { icon:FileCheck,  label:'Applications',     href:'/admin/applications' },
+    { icon:TrendingUp, label:'Leads',            href:'/admin/leads' },
+    { icon:Star,       label:'Reviews',          href:'/admin/reviews' },
+    { icon:PhoneCall,  label:'Counselling',      href:'/admin/counselling' },
+    { icon:BookOpen,   label:'Blog',             href:'/admin/blog' },
   ]},
   { label:'Monetisation', items:[
-    { icon:DollarSign, label:'Lead Pricing', href:'/admin/lead-pricing' },
-    { icon:Package,    label:'Packages',     href:'/admin/packages' },
-    { icon:FileText,   label:'Payments',     href:'/admin/payments' },
+    { icon:DollarSign,   label:'Lead Pricing',         href:'/admin/lead-pricing' },
+    { icon:LayoutGrid,   label:'Subscription Plans',   href:'/admin/subscription-plans' },
+    { icon:FileText,     label:'Payments',             href:'/admin/payments' },
   ]},
   { label:'Platform', items:[
-    { icon:Settings,   label:'Settings',     href:'/admin/settings' },
-    { icon:Palette,    label:'Theme',        href:'/admin/theme' },
-    { icon:Mail,       label:'Integrations', href:'/admin/integrations' },
-    { icon:FileText,   label:'Page Content', href:'/admin/content' },
-    { icon:Bell,       label:'Notifications',href:'/admin/notifications' },
-    { icon:BarChart3,  label:'SEO Manager',  href:'/admin/seo' },
-    { icon:ImageIcon,  label:'Media & Brand',href:'/admin/media' },
-    { icon:MapPin,     label:'SEO Cities',   href:'/admin/cities' },
+    { icon:Settings,     label:'Settings',         href:'/admin/settings' },
+    { icon:Palette,      label:'Theme',            href:'/admin/theme' },
+    { icon:Mail,         label:'Integrations',     href:'/admin/integrations' },
+    { icon:FileText,     label:'Page Content',     href:'/admin/content' },
+    { icon:LayoutList,   label:'Menu Manager',     href:'/admin/menu' },
+    { icon:Bell,         label:'Notifications',    href:'/admin/notifications' },
+    { icon:Zap,          label:'Message Triggers', href:'/admin/email-triggers' },
+    { icon:BarChart3,    label:'SEO Manager',      href:'/admin/seo' },
+    { icon:ImageIcon,    label:'Media & Brand',    href:'/admin/media' },
+    { icon:MapPin,       label:'SEO Cities',       href:'/admin/cities' },
   ]},
 ]
 
@@ -61,7 +66,7 @@ function DBStatusBanner() {
   )
 }
 
-export function AdminLayout({ children, title, subtitle }: { children: React.ReactNode; title: string; subtitle?: string }) {
+export function AdminLayout({ children, title, subtitle, pageClass }: { children: React.ReactNode; title: string; subtitle?: string; pageClass?: string }) {
   const pathname = usePathname()
   const { user, logout } = useAuthStore()
   const [open, setOpen] = useState(false)
@@ -131,7 +136,7 @@ export function AdminLayout({ children, title, subtitle }: { children: React.Rea
   )
 
   return (
-    <div className="admin-root">
+    <div className={`admin-root${pageClass ? ` ${pageClass}` : ''}`}>
       <div className="hidden lg:flex" style={{ flexShrink:0, height:'100vh', position:'sticky', top:0 }}>
         <Sidebar />
       </div>
@@ -162,7 +167,7 @@ export function AdminLayout({ children, title, subtitle }: { children: React.Rea
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color:'#9CA3AF', flexShrink:0 }}>
                 <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
               </svg>
-              <input placeholder="Search…" />
+              <input placeholder="Search..." />
             </div>
             <button className="header-icon-btn">
               <Bell style={{ width:15, height:15 }} />

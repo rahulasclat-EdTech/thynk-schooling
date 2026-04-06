@@ -67,7 +67,12 @@ export interface School {
   verificationStatus: 'pending' | 'approved' | 'rejected'
   avgRating: number
   totalReviews: number
-  facilities?: SchoolFacilities
+  facilities?: string[]
+  sports?: string[]
+  extraCurricular?: string[]
+  languagesOffered?: string[]
+  // legacy
+  facilitiesLegacy?: SchoolFacilities
   admissionInfo?: AdmissionInfo
   pricePerLead?: number
   subscriptionPlan?: 'free' | 'silver' | 'gold' | 'platinum'
@@ -133,17 +138,6 @@ export interface Lead {
   isPurchased: boolean
   createdAt: string
   expiresAt?: string
-}
-
-// ── Lead Package ──────────────────────────────────────────────
-export interface LeadPackage {
-  id: string
-  name: string
-  leadCredits: number
-  price: number
-  validityDays: number
-  isActive: boolean
-  description?: string
 }
 
 // ── Lead Credits ──────────────────────────────────────────────
@@ -236,6 +230,10 @@ export interface SchoolSearchFilters {
   query?: string
   page?: number
   limit?: number
+  facilities?: string[]
+  sports?: string[]
+  extraCurricular?: string[]
+  language?: string
   sortBy?: 'rating' | 'fee_asc' | 'fee_desc' | 'newest'
 }
 
