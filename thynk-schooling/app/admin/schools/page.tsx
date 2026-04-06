@@ -27,15 +27,16 @@ export default function AdminSchoolsPage() {
   if (tab === 'Featured')  params.set('isFeatured', 'true')
   if (tab === 'Inactive')  params.set('isActive', 'false')
 
-  const { data, isLoading } = useQuery<{ data: AdminSchool[]; total: number }>({
+  const { data, isLoading, error } = useQuery<{ data: AdminSchool[]; total: number; error?: string }>({
     queryKey: ['admin-schools', tab, search, page],
-    queryFn: () => fetch(`/api/admin/schools?${params}`, { cache: 'no-store' }).then(r => r.json()),
-    staleTime: 2 * 60 * 1000,
+    queryFn: () => fetch(`/api/admin?action=schools&${params}`, { cache: 'no-store' }).then(r => r.json()),
+    staleTime: 0,
+    retry: 2,
   })
 
   const inv = () => queryClient.invalidateQueries({ queryKey: ['admin-schools'] })
   const mut = (body: any, id: string) =>
-    fetch(`/api/admin/schools?id=${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).then(r => r.json())
+    fetch(`/api/admin?action=schools&id=${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).then(r => r.json())
 
   const verifyMut   = useMutation({ mutationFn: ({ id, v }: any) => mut({ isVerified: v }, id),   onSuccess: (_, { v }) => { toast.success(v ? '✓ School verified' : 'Verification removed'); inv() }, onError: () => toast.error('Failed') })
   const featureMut  = useMutation({ mutationFn: ({ id, v }: any) => mut({ isFeatured: v }, id),  onSuccess: (_, { v }) => { toast.success(v ? '★ School featured' : 'Removed from featured'); inv() }, onError: () => toast.error('Failed') })
@@ -43,10 +44,10 @@ export default function AdminSchoolsPage() {
 
   const schools = data?.data ?? [], total = data?.total ?? 0
 
-  const card: React.CSSProperties = { background: 'var(--admin-card-bg,#0F1623)', border: '1px solid var(--admin-border,rgba(255,255,255,0.08))', borderRadius: 14 }
+  const card: React.CSSProperties = { background: 'var(--admin-schools-card-bg,#111820)', border: '1px solid var(--admin-schools-card-border,rgba(255,255,255,0.08))', borderRadius: 14 }
 
   return (
-    <AdminLayout title="Schools Manager" subtitle="Verify, feature and manage all schools on the platform">
+    <AdminLayout pageClass="admin-page-schools" title="Schools Manager" subtitle="Verify, feature and manage all schools on the platform">
       <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}`}</style>
 
       {/* Summary */}
@@ -103,7 +104,9 @@ export default function AdminSchoolsPage() {
             <tbody>
               {isLoading
                 ? [1,2,3,4,5,6,7,8].map(i => <tr key={i}><td colSpan={7} style={{ padding: '10px 16px' }}><div style={{ height: 36, background: 'rgba(255,255,255,0.04)', borderRadius: 8, animation: 'pulse 1.5s ease-in-out infinite' }} /></td></tr>)
-                : schools.length === 0
+                : (data?.error)
+                  ? <tr><td colSpan={7} style={{ padding: 48, textAlign: 'center', color: '#F87171', fontFamily: 'DM Sans,sans-serif', fontSize: 13 }}>API Error: {data.error}</td></tr>
+                  : schools.length === 0
                   ? <tr><td colSpan={7} style={{ padding: 48, textAlign: 'center', color: 'var(--admin-text-faint,rgba(255,255,255,0.3))', fontFamily: 'DM Sans,sans-serif', fontSize: 13 }}>No schools found.</td></tr>
                   : schools.map(s => (
                       <tr key={s.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', transition: 'background .15s' }}

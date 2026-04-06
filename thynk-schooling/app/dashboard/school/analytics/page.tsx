@@ -12,7 +12,7 @@ const NAV = [
   {href:'/dashboard/school/applications',label:'Applications',icon:'📝'},
   {href:'/dashboard/school/reviews',label:'Reviews',icon:'⭐'},
   {href:'/dashboard/school/analytics',label:'Analytics',icon:'📈'},
-  {href:'/dashboard/school/packages',label:'Packages',icon:'📦'}
+  
 ]
 
 function SchoolLayout({ children, title }: { children: React.ReactNode; title: string }) {
@@ -57,7 +57,7 @@ function AnalyticsCards() {
   const [stats, setStats] = useState<any>({})
   const [loading, setLoading] = useState(true)
   useEffect(() => {
-    fetch('/api/schools/me/analytics',{cache:'no-store'}).then(r=>r.json()).then(d=>setStats(d)).catch(()=>{}).finally(()=>setLoading(false))
+    fetch('/api/schools?action=analytics',{cache:'no-store'}).then(r=>r.json()).then(d=>setStats(d)).catch(()=>{}).finally(()=>setLoading(false))
   },[])
   const cards = [
     {label:'Profile Views',value:stats.profileViews||'—',icon:'👁️',color:'#B8860B'},

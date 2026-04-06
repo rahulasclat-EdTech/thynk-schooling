@@ -42,6 +42,10 @@ const DROPDOWN_CATEGORIES = [
   { key: 'application_status', label: 'Application Status', icon: '✅', desc: 'Pending, Shortlisted, Admitted…' },
   { key: 'source',             label: 'Lead Source',        icon: '📡', desc: 'Organic, Paid, Referral…' },
   { key: 'how_did_you_hear',   label: 'How Did You Hear',   icon: '👂', desc: 'Google, Instagram, Word of mouth…' },
+  { key: 'facility',            label: 'Facilities',          icon: '🏗️', desc: 'Transport, Lab, Pool, Library…' },
+  { key: 'sport',               label: 'Sports',              icon: '⚽', desc: 'Cricket, Football, Basketball…' },
+  { key: 'extra_curricular',    label: 'Extra Curricular',    icon: '🎭', desc: 'Dance, Music, Debate, Art…' },
+  { key: 'language',            label: 'Languages Offered',   icon: '🗣️', desc: 'Hindi, French, German, Sanskrit…' },
 ]
 
 const iS: React.CSSProperties = {
@@ -333,7 +337,7 @@ export default function AdminSettingsPage() {
   const activeCatDef = DROPDOWN_CATEGORIES.find(c => c.key === activeCategory)
 
   return (
-    <AdminLayout title="Dropdown Settings" subtitle="Single source of truth — all dropdown values across the platform">
+    <AdminLayout pageClass="admin-page-settings" title="Dropdown Settings" subtitle="Single source of truth — all dropdown values across the platform">
 
       {/* Top action bar */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, padding: '14px 18px', background: 'rgba(184,134,11,0.06)', border: '1px solid rgba(184,134,11,0.18)', borderRadius: 12 }}>

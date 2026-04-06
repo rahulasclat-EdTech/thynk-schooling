@@ -1,79 +1,80 @@
-export const dynamic = "force-dynamic"
-import { NextRequest } from 'next/server'
+export const dynamic = 'force-dynamic'
+import { NextRequest, NextResponse } from 'next/server'
 import db from '@/lib/db'
+
 export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url)
-  const role     = searchParams.get('role')
-  const isActive = searchParams.get('isActive')
-  const search   = searchParams.get('search') || ''
-  const limit    = Math.min(50, Number(searchParams.get('limit') || 20))
-  const page     = Math.max(1, Number(searchParams.get('page') || 1))
-  const offset   = (page - 1) * limit
-
-  const conds: string[] = ["u.role != 'super_admin'"]
-  const params: unknown[] = []
-  let idx = 1
-
-  if (role)              { conds.push(`u.role = $${idx++}`);      params.push(role) }
-  if (isActive === 'false') { conds.push(`u.is_active = $${idx++}`); params.push(false) }
-  if (search)            {
-    conds.push(`(u.full_name ILIKE $${idx} OR u.name ILIKE $${idx} OR u.phone ILIKE $${idx} OR u.mobile ILIKE $${idx} OR u.email ILIKE $${idx})`)
-    params.push(`%${search}%`); idx++
-  }
-  const where = conds.join(' AND ')
-
   try {
-    const [rows, ct] = await Promise.all([
+    const { searchParams } = new URL(req.url)
+    const role   = searchParams.get('role')
+    const search = searchParams.get('search') || searchParams.get('q') || ''
+    const status = searchParams.get('status')
+    const limit  = Math.min(50, Number(searchParams.get('limit') || 20))
+    const page   = Math.max(1,  Number(searchParams.get('page')  || 1))
+    const offset = (page - 1) * limit
+
+    const conds: string[] = ["u.role != 'super_admin'"]
+    const params: any[]   = []
+    let idx = 1
+
+    if (role && role !== 'suspended') { conds.push(`u.role = $${idx++}`); params.push(role) }
+    if (status === 'suspended' || role === 'suspended') { conds.push(`u.is_active = $${idx++}`); params.push(false) }
+    if (search) {
+      conds.push(`(COALESCE(u.full_name,u.name) ILIKE $${idx} OR COALESCE(u.phone,u.mobile) ILIKE $${idx} OR u.email ILIKE $${idx})`)
+      params.push(`%${search}%`)
+      idx++
+    }
+
+    const where = conds.join(' AND ')
+
+    const [rows, ct, parentCt, schoolCt, suspendedCt] = await Promise.all([
       db.query(
-        `SELECT
-           u.id,
-           COALESCE(u.full_name, u.name)   AS full_name,
-           COALESCE(u.phone, u.mobile)      AS phone,
-           u.email,
-           u.role,
-           COALESCE(u.is_active, true)      AS is_active,
-           COALESCE(u.is_phone_verified, u.is_verified, false) AS is_phone_verified,
-           u.profile_completed,
-           u.last_login_at,
-           u.last_ip,
-           u.created_at,
-           s.name AS school_name,
-           (SELECT COUNT(*) FROM applications a WHERE a.parent_id = u.id)      AS total_applications,
-           (SELECT COUNT(*) FROM lead_purchases lp WHERE lp.school_id = s2.id) AS total_leads_bought
+        `SELECT u.id,
+                COALESCE(u.full_name, u.name) AS full_name,
+                COALESCE(u.phone, u.mobile)   AS phone,
+                u.email, u.role,
+                COALESCE(u.is_active, true)   AS is_active,
+                u.profile_completed, u.last_login_at, u.created_at,
+                s.name AS school_name
          FROM users u
-         LEFT JOIN user_profiles up ON up.user_id = u.id
-         LEFT JOIN schools s  ON s.id  = up.school_id
-         LEFT JOIN schools s2 ON s2.admin_user_id = u.id
+         LEFT JOIN schools s ON s.admin_user_id = u.id
          WHERE ${where}
          ORDER BY u.created_at DESC
-         LIMIT $${idx} OFFSET $${idx+1}`,
+         LIMIT $${idx} OFFSET $${idx + 1}`,
         [...params, limit, offset]
       ),
       db.query(`SELECT COUNT(*) FROM users u WHERE ${where}`, params),
+      db.query("SELECT COUNT(*) FROM users WHERE role='parent'").catch(()=>({rows:[{count:0}]})),
+      db.query("SELECT COUNT(*) FROM users WHERE role='school_admin'").catch(()=>({rows:[{count:0}]})),
+      db.query("SELECT COUNT(*) FROM users WHERE is_active=false").catch(()=>({rows:[{count:0}]})),
     ])
 
-    return Response.json({
-      data: rows.rows.map(r => ({
-        id: r.id,
-        fullName: r.full_name || '—',
-        phone: r.phone || '—',
-        email: r.email || null,
-        role: r.role,
-        isActive: r.is_active,
-        isPhoneVerified: r.is_phone_verified,
-        profileCompleted: r.profile_completed || false,
-        lastLoginAt: r.last_login_at || null,
-        lastIp: r.last_ip || null,
-        createdAt: r.created_at,
-        schoolName: r.school_name || null,
-        totalApplications: Number(r.total_applications) || 0,
-        totalLeadsBought: Number(r.total_leads_bought) || 0,
-      })),
-      total: Number(ct.rows[0].count),
-      page, limit,
+    const total = Number(ct.rows[0].count)
+    const users = rows.rows.map((r: any) => ({
+      id:          r.id,
+      fullName:    r.full_name  || '—',
+      phone:       r.phone      || '—',
+      email:       r.email      || null,
+      role:        r.role,
+      school:      r.school_name || null,   // users page reads u.school
+      schoolName:  r.school_name || null,
+      profileDone: r.profile_completed || false,
+      lastLogin:   r.last_login_at     || null,
+      joinedAt:    r.created_at,
+      status:      r.is_active === false ? 'suspended' : 'active',
+    }))
+
+    return NextResponse.json({
+      users, data: users, total, page, limit,
+      totalPages: Math.ceil(total / limit),
+      stats: {
+        total:     Number(ct.rows[0].count),
+        parents:   Number(parentCt.rows[0].count),
+        schools:   Number(schoolCt.rows[0].count),
+        suspended: Number(suspendedCt.rows[0].count),
+      },
     })
-  } catch (err) {
-    console.error('[admin/users GET]', err)
-    return Response.json({ message: 'Failed' }, { status: 500 })
+  } catch (e: any) {
+    console.error('GET /api/admin/users:', e.message)
+    return NextResponse.json({ users:[], data:[], total:0, totalPages:1, stats:{total:0,parents:0,schools:0,suspended:0} })
   }
 }
